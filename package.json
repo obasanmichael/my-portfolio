@@ -9,19 +9,44 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@heroui/use-theme": "^2.1.10",
+    "@react-three/drei": "^10.7.4",
+    "@react-three/fiber": "^9.3.0",
+    "@sentry/nextjs": "^10.9.0",
+    "@tabler/icons-react": "^3.34.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.542.0",
+    "mini-svg-data-uri": "^1.4.4",
+    "next": "15.5.2",
+    "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.2"
+    "react-icons": "^5.5.0",
+    "react-lottie": "^1.2.10",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7",
+    "three": "^0.180.0",
+    "three-globe": "^2.44.0",
+    "vercel": "^47.0.4"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@types/react-lottie": "^1.2.10",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "framer-motion": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0"
+    }
   }
 }
