@@ -18,12 +18,13 @@ const Footer = () => {
 
       <div className="flex flex-col items-center">
         <h1 className="heading lg:max-w-[45vw]">
-          Ready to take <span className="text-purple">your</span> digital
-          presence to the next level?
+          Let’s build <span className="text-purple">meaningful</span> digital
+          experiences together
         </h1>
         <p className="text-white-200 md:mt-10 my-5 text-center">
-          Reach out to me today and let&apos;s discuss how I can help you
-          achieve your goals.
+          Whether it’s creating intuitive interfaces or solving real-world
+          challenges, I’m always excited to collaborate on projects that make an
+          impact. Reach out and let’s bring your ideas to life.
         </p>
         <Link href="mailto:obasantolu@gmail.com" target="_blank">
           <MagicButton
