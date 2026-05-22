@@ -1,6 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "@/lib/hooks";
 
 export const BackgroundGradientAnimation = ({
   gradientBackgroundStart = "rgb(108, 0, 162)",
@@ -34,11 +35,12 @@ export const BackgroundGradientAnimation = ({
   containerClassName?: string;
 }) => {
   const interactiveRef = useRef<HTMLDivElement>(null);
+  const positionRef = useRef({ curX: 0, curY: 0, tgX: 0, tgY: 0 });
+  const rafRef = useRef<number | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  const [curX, setCurX] = useState(0);
-  const [curY, setCurY] = useState(0);
-  const [tgX, setTgX] = useState(0);
-  const [tgY, setTgY] = useState(0);
+  const [isSafari, setIsSafari] = useState(false);
+
   useEffect(() => {
     document.body.style.setProperty(
       "--gradient-background-start",
@@ -56,35 +58,54 @@ export const BackgroundGradientAnimation = ({
     document.body.style.setProperty("--pointer-color", pointerColor);
     document.body.style.setProperty("--size", size);
     document.body.style.setProperty("--blending-value", blendingValue);
-  }, []);
+  }, [
+    gradientBackgroundStart,
+    gradientBackgroundEnd,
+    firstColor,
+    secondColor,
+    thirdColor,
+    fourthColor,
+    fifthColor,
+    pointerColor,
+    size,
+    blendingValue,
+  ]);
 
-  useEffect(() => {
-    function move() {
-      if (!interactiveRef.current) {
-        return;
-      }
-      setCurX(curX + (tgX - curX) / 20);
-      setCurY(curY + (tgY - curY) / 20);
-      interactiveRef.current.style.transform = `translate(${Math.round(
-        curX
-      )}px, ${Math.round(curY)}px)`;
-    }
-
-    move();
-  }, [tgX, tgY]);
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (interactiveRef.current) {
-      const rect = interactiveRef.current.getBoundingClientRect();
-      setTgX(event.clientX - rect.left);
-      setTgY(event.clientY - rect.top);
-    }
-  };
-
-  const [isSafari, setIsSafari] = useState(false);
   useEffect(() => {
     setIsSafari(/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
   }, []);
+
+  useEffect(() => {
+    if (!interactive || prefersReducedMotion) return;
+
+    const animate = () => {
+      const pos = positionRef.current;
+      pos.curX += (pos.tgX - pos.curX) / 20;
+      pos.curY += (pos.tgY - pos.curY) / 20;
+
+      if (interactiveRef.current) {
+        interactiveRef.current.style.transform = `translate(${Math.round(
+          pos.curX
+        )}px, ${Math.round(pos.curY)}px)`;
+      }
+
+      rafRef.current = requestAnimationFrame(animate);
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [interactive, prefersReducedMotion]);
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!interactiveRef.current || prefersReducedMotion) return;
+    const rect = interactiveRef.current.getBoundingClientRect();
+    positionRef.current.tgX = event.clientX - rect.left;
+    positionRef.current.tgY = event.clientY - rect.top;
+  };
 
   return (
     <div
@@ -123,7 +144,7 @@ export const BackgroundGradientAnimation = ({
             `absolute [background:radial-gradient(circle_at_center,_var(--first-color)_0,_var(--first-color)_50%)_no-repeat]`,
             `[mix-blend-mode:var(--blending-value)] w-[var(--size)] h-[var(--size)] top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]`,
             `[transform-origin:center_center]`,
-            `animate-first`,
+            prefersReducedMotion ? "" : `animate-first`,
             `opacity-100`
           )}
         ></div>
@@ -132,7 +153,7 @@ export const BackgroundGradientAnimation = ({
             `absolute [background:radial-gradient(circle_at_center,_rgba(var(--second-color),_0.8)_0,_rgba(var(--second-color),_0)_50%)_no-repeat]`,
             `[mix-blend-mode:var(--blending-value)] w-[var(--size)] h-[var(--size)] top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]`,
             `[transform-origin:calc(50%-400px)]`,
-            `animate-second`,
+            prefersReducedMotion ? "" : `animate-second`,
             `opacity-100`
           )}
         ></div>
@@ -141,7 +162,7 @@ export const BackgroundGradientAnimation = ({
             `absolute [background:radial-gradient(circle_at_center,_rgba(var(--third-color),_0.8)_0,_rgba(var(--third-color),_0)_50%)_no-repeat]`,
             `[mix-blend-mode:var(--blending-value)] w-[var(--size)] h-[var(--size)] top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]`,
             `[transform-origin:calc(50%+400px)]`,
-            `animate-third`,
+            prefersReducedMotion ? "" : `animate-third`,
             `opacity-100`
           )}
         ></div>
@@ -150,7 +171,7 @@ export const BackgroundGradientAnimation = ({
             `absolute [background:radial-gradient(circle_at_center,_rgba(var(--fourth-color),_0.8)_0,_rgba(var(--fourth-color),_0)_50%)_no-repeat]`,
             `[mix-blend-mode:var(--blending-value)] w-[var(--size)] h-[var(--size)] top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]`,
             `[transform-origin:calc(50%-200px)]`,
-            `animate-fourth`,
+            prefersReducedMotion ? "" : `animate-fourth`,
             `opacity-70`
           )}
         ></div>
@@ -159,7 +180,7 @@ export const BackgroundGradientAnimation = ({
             `absolute [background:radial-gradient(circle_at_center,_rgba(var(--fifth-color),_0.8)_0,_rgba(var(--fifth-color),_0)_50%)_no-repeat]`,
             `[mix-blend-mode:var(--blending-value)] w-[var(--size)] h-[var(--size)] top-[calc(50%-var(--size)/2)] left-[calc(50%-var(--size)/2)]`,
             `[transform-origin:calc(50%-800px)_calc(50%+800px)]`,
-            `animate-fifth`,
+            prefersReducedMotion ? "" : `animate-fifth`,
             `opacity-100`
           )}
         ></div>

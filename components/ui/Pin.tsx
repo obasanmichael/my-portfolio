@@ -14,43 +14,31 @@ export const PinContainer = ({
   className?: string;
   containerClassName?: string;
 }) => {
-  const [transform, setTransform] = useState(
-    "translate(-50%,-50%) rotateX(0deg)"
-  );
-
-  const onMouseEnter = () => {
-    setTransform("translate(-50%,-50%) rotateX(40deg) scale(0.8)");
-  };
-  const onMouseLeave = () => {
-    setTransform("translate(-50%,-50%) rotateX(0deg) scale(1)");
-  };
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div
-      className={cn(
-        "relative group/pin z-50  cursor-pointer",
-        containerClassName
-      )}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      className={cn("relative group/pin w-full cursor-pointer", containerClassName)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div
+        className="relative w-full transition-transform duration-700 ease-out"
         style={{
-          perspective: "1000px",
-          transform: "rotateX(70deg) translateZ(0deg)",
+          transform: isHovered
+            ? "perspective(1000px) rotateX(8deg) scale(0.98)"
+            : "perspective(1000px) rotateX(0deg) scale(1)",
         }}
-        className="absolute left-1/2 top-1/2 ml-[0.09375rem] mt-4 -translate-x-1/2 -translate-y-1/2"
       >
         <div
-          style={{
-            transform: transform,
-          }}
-          className="absolute left-1/2 p-4 top-1/2  flex justify-start items-start  rounded-2xl  shadow-[0_8px_16px_rgb(0_0_0/0.4)] border border-white/[0.1] group-hover/pin:border-white/[0.2] transition duration-700 overflow-hidden"
+          className={cn(
+            "relative w-full p-4 flex flex-col rounded-2xl shadow-[0_8px_16px_rgb(0_0_0/0.4)] border border-white/[0.1] group-hover/pin:border-white/[0.2] transition-colors duration-700 overflow-hidden bg-black-100/80",
+            className
+          )}
         >
-          <div className={cn(" relative z-50 ", className)}>{children}</div>
+          {children}
         </div>
       </div>
     </div>
   );
 };
-

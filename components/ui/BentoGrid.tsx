@@ -1,15 +1,60 @@
 "use client";
-import { useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
 import { IoCopyOutline } from "react-icons/io5";
-
-import Lottie from "react-lottie";
 
 import { cn } from "@/lib/utils";
 
 import GridGlobe from "./GridGlobe";
-import animationData from "@/data/confetti.json";
 import MagicButton from "../MagicButton";
 import { BackgroundGradientAnimation } from "./GradientBg";
+
+const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
+
+function OptimizedImage({
+  src,
+  alt,
+  className,
+  fill = false,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  fill?: boolean;
+}) {
+  const isSvg = src.endsWith(".svg");
+
+  if (isSvg) {
+    return (
+      <img src={src} alt={alt} className={className} loading="lazy" decoding="async" />
+    );
+  }
+
+  if (fill) {
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={800}
+      height={600}
+      sizes="(max-width: 768px) 100vw, 50vw"
+      className={className}
+      loading="lazy"
+    />
+  );
+}
 
 export const BentoGrid = ({
   className,
@@ -30,7 +75,7 @@ export const BentoGrid = ({
   );
 };
 
-export const BentoGridItem = ({
+export const BentoGridItem = memo(function BentoGridItem({
   className,
   id,
   title,
@@ -48,26 +93,40 @@ export const BentoGridItem = ({
   imgClassName?: string;
   titleClassName?: string;
   spareImg?: string;
-}) => {
-  const leftLists = ["ReactJS", "NextJS", "Typescript"];
-  const rightLists = ["Github", "flutter", "firebase  "];
+}) {
+  const leftLists = useMemo(
+    () => ["ReactJS", "NextJS", "Typescript"],
+    []
+  );
+  const rightLists = useMemo(() => ["Github", "flutter", "firebase  "], []);
 
   const [copied, setCopied] = useState(false);
+  const [animationData, setAnimationData] = useState<object | null>(null);
 
-  const defaultOptions = {
-    loop: copied,
-    autoplay: copied,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
-  };
+  useEffect(() => {
+    if (!copied || animationData) return;
+    import("@/data/confetti.json").then((mod) => setAnimationData(mod.default));
+  }, [copied, animationData]);
 
-  const handleCopy = () => {
-    const text = "obasantolu@gmail.com";
-    navigator.clipboard.writeText(text);
+  const lottieOptions = useMemo(
+    () =>
+      animationData
+        ? {
+            loop: true,
+            autoplay: true,
+            animationData,
+            rendererSettings: {
+              preserveAspectRatio: "xMidYMid slice",
+            },
+          }
+        : null,
+    [animationData]
+  );
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText("obasantolu@gmail.com");
     setCopied(true);
-  };
+  }, []);
 
   return (
     <div
@@ -76,18 +135,18 @@ export const BentoGridItem = ({
         className
       )}
       style={{
-        background: "rgb(4,7,29)",
-        backgroundColor:
+        background:
           "linear-gradient(90deg, rgba(4,7,29,1) 0%, rgba(12,14,35,1) 100%)",
       }}
     >
       <div className={`${id === 6 && "flex justify-center"} h-full`}>
         <div className="w-full h-full absolute">
           {img && (
-            <img
+            <OptimizedImage
               src={img}
-              alt={img}
-              className={cn(imgClassName, "object-cover object-center ")}
+              alt={typeof title === "string" ? title : "grid item"}
+              className={cn(imgClassName, "object-cover object-center")}
+              fill
             />
           )}
         </div>
@@ -97,9 +156,9 @@ export const BentoGridItem = ({
           } `}
         >
           {spareImg && (
-            <img
+            <OptimizedImage
               src={spareImg}
-              alt={spareImg}
+              alt="decorative"
               className="object-cover object-center w-full h-full"
             />
           )}
@@ -116,10 +175,7 @@ export const BentoGridItem = ({
             "group-hover/bento:translate-x-2 transition duration-200 relative md:h-full min-h-40 flex flex-col px-5 p-5 lg:p-10"
           )}
         >
-
-          <div
-            className={`font-sans text-lg lg:text-3xl max-w-96 font-bold z-10`}
-          >
+          <div className="font-sans text-lg lg:text-3xl max-w-96 font-bold z-10">
             {title}
           </div>
           <div className="font-sans font-extralight md:max-w-45 md:text-xs lg:text-base text-sm text-[#C1C2D3] z-10">
@@ -131,22 +187,22 @@ export const BentoGridItem = ({
           {id === 3 && (
             <div className="flex gap-1 lg:gap-5 w-fit absolute -right-3 lg:-right-2">
               <div className="flex flex-col gap-3 md:gap-3 lg:gap-8">
-                {leftLists.map((item, i) => (
+                {leftLists.map((item) => (
                   <span
-                    key={i}
+                    key={item}
                     className="lg:py-4 lg:px-3 py-2 px-3 text-xs lg:text-base opacity-50 
                     lg:opacity-100 rounded-lg text-center bg-[#10132E]"
                   >
                     {item}
                   </span>
                 ))}
-                <span className="lg:py-4 lg:px-3 py-4 px-3  rounded-lg text-center bg-[#10132E]"></span>
+                <span className="lg:py-4 lg:px-3 py-4 px-3 rounded-lg text-center bg-[#10132E]"></span>
               </div>
               <div className="flex flex-col gap-3 md:gap-3 lg:gap-8">
-                <span className="lg:py-4 lg:px-3 py-4 px-3  rounded-lg text-center bg-[#10132E]"></span>
-                {rightLists.map((item, i) => (
+                <span className="lg:py-4 lg:px-3 py-4 px-3 rounded-lg text-center bg-[#10132E]"></span>
+                {rightLists.map((item) => (
                   <span
-                    key={i}
+                    key={item}
                     className="lg:py-4 lg:px-3 py-2 px-3 text-xs lg:text-base opacity-50 
                     lg:opacity-100 rounded-lg text-center bg-[#10132E]"
                   >
@@ -158,13 +214,11 @@ export const BentoGridItem = ({
           )}
           {id === 6 && (
             <div className="mt-5 relative">
-              <div
-                className={`absolute -bottom-5 right-0 ${
-                  copied ? "block" : "block"
-                }`}
-              >
-                <Lottie options={defaultOptions} height={200} width={400} />
-              </div>
+              {copied && lottieOptions && (
+                <div className="absolute -bottom-5 right-0">
+                  <Lottie options={lottieOptions} height={200} width={400} />
+                </div>
+              )}
 
               <MagicButton
                 title={copied ? "Email is Copied!" : "Copy my email address"}
@@ -179,4 +233,4 @@ export const BentoGridItem = ({
       </div>
     </div>
   );
-};
+});
